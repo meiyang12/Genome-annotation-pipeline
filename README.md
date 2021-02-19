@@ -389,4 +389,3 @@ interproscan.sh -appl Pfam -f TSV -i pep.fa -cpu 50 -b sample -goterms -iprlooku
 
 ------
 
-***Copyright Reserved by Yang Mei (meiyang12@zju.edu.cn)***
