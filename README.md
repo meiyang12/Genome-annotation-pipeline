@@ -58,7 +58,7 @@
 
 ### 2. Genome assessment
 
-> #### *BUSCO~v4~*
+> #### *BUSCOv4*
 >
 > + genome.fa
 > + insecta_odb10
@@ -73,7 +73,7 @@ busco --cpu 28 -l /gpfs/home/meiyang/opt/insecta_odb10 --config /gpfs/home/meiya
 
 ### 3. Repeat annotation and genome mask
 
-> #### *RepeatModeler~v2~ & RepeatMasker*
+> #### *RepeatModelerv2 & RepeatMasker*
 >
 > + genome.fa
 
@@ -102,7 +102,7 @@ RepeatMasker -pa 28 -dir 04_delete-repeamasker-noint-result -noint 03_delete-rep
 
 #### 4.1 Ab initio gene prediction
 
-> #### *BRAKER~v2~*
+> #### *BRAKERv2*
 >
 > + masked geome (genome.fa)
 > + homology protein (OrthoDB), proetin.fasta
