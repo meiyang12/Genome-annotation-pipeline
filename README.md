@@ -216,8 +216,7 @@ done
 # -------------------------------------------------------------------------------------- #
 # merge
 cat ./out/*out > gth.out
-perl Convert_gth.pl gth.out > gth.gff3
-perl Convert_gth.pl gth.gff3 >protein_alignments.gff3
+perl Convert_gth.pl gth.out >protein_alignments.gff3
 ```
 
 > **protein_alignments.gff3**
