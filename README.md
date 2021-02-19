@@ -9,10 +9,6 @@
 > ***Date: 2021-02***
 
 
-
-
-[TOC]
-
 ------
 
 ### 1. Prerequisites
