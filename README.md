@@ -350,6 +350,7 @@ python Collect_no_alt.py pep.fa cds.fa Sfru.gff3
 
 
 
+
 #### 6.2 Function annotation
 
 > #### 1. *Swiss-prot & Id mapping (GO term)*
