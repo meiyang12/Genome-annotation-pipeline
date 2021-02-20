@@ -47,6 +47,7 @@
 3. Swiss-prot (https://www.uniprot.org/downloads, Reviewed)
 4. Id-mapping (https://ftp.uniprot.org/pub/databases/uniprot/current_release/knowledgebase/idmapping/)
 5. KEGG
+6. Pfam (http://pfam.xfam.org/)
 
 ------
 
@@ -363,7 +364,7 @@ blastp -query pep.fa -db uniprot_sprot.fasta -num_threads 28 -evalue 1e-3 -outfm
 perl add_swissprot_annotation.pl uniprot_sprot.fasta pep.fasta swiss.out  > pep.anno.fasta
 
 # Go id mapping
-python go_id_mapping.py idmapping_go.tb swiss.out > Sfru_GO_annotation.out
+python go_id_mapping.py idmapping_go.tb swiss.out pep.anno.fasta > Uniprot_GO_anno.out
 ```
 
 
@@ -371,20 +372,30 @@ python go_id_mapping.py idmapping_go.tb swiss.out > Sfru_GO_annotation.out
 > #### 2. *KEGG*
 
 ```shell
-blastp -query pep.fasta -db kegg_db.fasta -num_threads 28 -evalue 1e-3 -outfmt 6 -max_target_seqs 1 -out kegg.out
+diamond makedb --in kegg.fasta --db kegg.fasta
+diamond blastp --db kegg.fasta -q pep.fa -o kegg.out --ultra-sensitive --max-target-seqs 1 -p 28 -e 0.001
 
-perl ./scripts/add_swissprot_annotation.pl kegg_db.fasta pep.anno.fasta kegg.out  > kegg_anno.txt
+python kegg_anno.py kegg.out > KEGG_anno.out
 ```
 
 
 
-> #### *3.InterPro*
+> #### *3.Pfam*
 
 ```shell
-interproscan.sh -appl Pfam -f TSV -i pep.fa -cpu 50 -b sample -goterms -iprlookup -pa
+hmmpress Pfam-A.hmm
+hmmscan --cpu 28 --tblout hmm.out Pfam-A.hmm pep.fa
+
+python pfam_anno.py hmm.out > Pfam_anno.out
 ```
 
 
+
+> #### **4.*Merge***
+
+```shell
+python merge_anno.py Uniprot_GO_anno.out KEGG_anno.out Pfam_anno.out > All_anno.out
+```
 
 ------
 
