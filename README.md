@@ -385,7 +385,7 @@ python kegg_anno.py kegg.out > KEGG_anno.out
 
 ```shell
 hmmpress Pfam-A.hmm
-hmmscan --cpu 28 --tblout hmm.out Pfam-A.hmm pep.fa
+hmmscan --cpu 28 -E 0.001 --tblout hmm.out Pfam-A.hmm pep.fa
 
 python pfam_anno.py hmm.out > Pfam_anno.out
 ```
@@ -395,7 +395,7 @@ python pfam_anno.py hmm.out > Pfam_anno.out
 > #### **4.*Merge***
 
 ```shell
-python merge_anno.py Uniprot_GO_anno.out KEGG_anno.out Pfam_anno.out > All_anno.out
+python merge_anno.py pep.fa Uniprot_GO_anno.out KEGG_anno.out Pfam_anno.out > All_anno.out
 ```
 
 ------
