@@ -359,7 +359,8 @@ python Collect_no_alt.py pep.fa cds.fa Sfru.gff3
 > + idmapping_go.tb
 
 ```shell
-blastp -query pep.fa -db uniprot_sprot.fasta -num_threads 28 -evalue 1e-3 -outfmt 6 -max_target_seqs 1 -out swiss.out
+diamond makedb --in uniprot_sprot.fasta --db uniprot_sprot.fasta
+diamond blastp --db uniprot_sprot.fasta -q pep.fa -o swiss.out --ultra-sensitive --max-target-seqs 1 -p 28 -e 0.001
 
 # swissprot anno
 perl add_swissprot_annotation.pl uniprot_sprot.fasta pep.fasta swiss.out  > pep.anno.fasta
