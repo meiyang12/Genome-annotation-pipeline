@@ -167,11 +167,11 @@ stringtie -p 28 -o stringtie.gtf merged.bam
 > #### 2. *TransDecoder*
 >
 > + masked geome (genome.fa)
-> + merged.gtf
+> + stringtie.gtf
 
 ```shell
 util/gtf_genome_to_cdna_fasta.pl stringtie.gtf genome.fa > transcripts.fasta
-util/gtf_to_alignment_gff3.pl transcripts.gtf > transcripts.gff3
+util/gtf_to_alignment_gff3.pl stringtie.gtf > transcripts.gff3
 
 TransDecoder.LongOrfs -t transcripts.fasta
 
