@@ -363,7 +363,7 @@ diamond makedb --in uniprot_sprot.fasta --db uniprot_sprot.fasta
 diamond blastp --db uniprot_sprot.fasta -q pep.fa -o swiss.out --ultra-sensitive --max-target-seqs 1 -p 28 -e 0.001
 
 # swissprot anno
-perl add_swissprot_annotation.pl uniprot_sprot.fasta pep.fasta swiss.out  > pep.anno.fasta
+python add_swissprot_anno.py uniprot_sprot.fasta pep.fasta swiss.out  > pep.anno.fasta
 
 # Go id mapping
 python go_id_mapping.py idmapping_go.tb swiss.out pep.anno.fasta > Uniprot_GO_anno.out
