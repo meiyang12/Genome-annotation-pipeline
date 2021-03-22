@@ -32,7 +32,6 @@
     + Blat (http://hgdownload.soe.ucsc.edu/admin/exe/linux.x86_64/blat/blat)
     + fasta (http://faculty.virginia.edu/wrpearson/fasta/fasta36/fasta-36.3.8g.tar.gz)
 11. gffread (https://github.com/gpertea/gffread)
-12. InterProScan (https://www.ebi.ac.uk/interpro/)
 
 #### 1.2 DataSet
 
