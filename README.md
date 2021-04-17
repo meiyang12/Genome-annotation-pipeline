@@ -106,7 +106,7 @@ RepeatMasker -pa 28 -dir 04_delete-repeamasker-noint-result -noint 03_delete-rep
 ```shell
 braker.pl --species=Sfru --genome=genome.fa --prot_seq=protein.fasta --softmasking --gff3 --cores=16 --workingdir=ab_initio --min_contig=4000
 
-perl Convert_braker.pl augustus.hints.gff3 > gene_predictions.gff3
+mv augustus.hints.gff3 gene_predictions.gff3
 ```
 
 > **gene_predictions.gff3**
@@ -216,7 +216,8 @@ done
 # -------------------------------------------------------------------------------------- #
 # merge
 cat ./out/*out > gth.out
-perl Convert_gth.pl gth.out >protein_alignments.gff3
+perl Convert_gth.pl gth.out >protein_alignments.gff
+perl homolog_change_gff3.pl protein_alignments.gff >protein_alignments.gff3
 ```
 
 > **protein_alignments.gff3**
