@@ -115,7 +115,7 @@ mv augustus.hints.gff3 gene_predictions.gff3
 
 #### 4.2 RNA-seq based gene prediction
 
-> #### 1. *HIAST2 & StringTie*
+> #### 1. *HISAT2 & StringTie*
 >
 > + masked geome (genome.fa)
 >+ transcriptome
