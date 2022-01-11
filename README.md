@@ -353,51 +353,11 @@ python Collect_no_alt.py pep.fa cds.fa Sfru.gff3
 
 #### 6.2 Function annotation
 
-> #### 1. *Swiss-prot & Id mapping (GO term)*
+> #### *eggNOG-mapper*
 >
 > + pep_no_alt.fa
-> + idmapping_go.tb
 
-```shell
-diamond makedb --in uniprot_sprot.fasta --db uniprot_sprot.fasta
-diamond blastp --db uniprot_sprot.fasta -q pep.fa -o swiss.out --ultra-sensitive --max-target-seqs 1 -p 28 -e 0.001
-
-# swissprot anno
-python add_swissprot_anno.py uniprot_sprot.fasta pep.fasta swiss.out  > pep.anno.fasta
-
-# Go id mapping
-python go_id_mapping.py idmapping_go.tb swiss.out pep.anno.fasta > Uniprot_GO_anno.out
-```
-
-
-
-> #### 2. *KEGG*
-
-```shell
-diamond makedb --in kegg.fasta --db kegg.fasta
-diamond blastp --db kegg.fasta -q pep.fa -o kegg.out --ultra-sensitive --max-target-seqs 1 -p 28 -e 0.001
-
-python kegg_anno.py kegg.out > KEGG_anno.out
-```
-
-
-
-> #### *3.Pfam*
-
-```shell
-hmmpress Pfam-A.hmm
-hmmscan --cpu 28 -E 0.001 --tblout hmm.out Pfam-A.hmm pep.fa
-
-python pfam_anno.py hmm.out > Pfam_anno.out
-```
-
-
-
-> #### **4.*Merge***
-
-```shell
-python merge_anno.py pep.fa Uniprot_GO_anno.out KEGG_anno.out Pfam_anno.out > All_anno.out
-```
+http://eggnog-mapper.embl.de/
 
 ------
 
