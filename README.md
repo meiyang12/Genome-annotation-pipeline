@@ -73,24 +73,25 @@ busco --cpu 28 -l /gpfs/home/meiyang/opt/insecta_odb10 --config /gpfs/home/meiya
 >
 > + genome.fa
 
-```shell
-# RepeatModeler
-mkdir 01_repeatModeler-denovo-repeat.lib && cd 01_repeatModeler-denovo-repeat.lib
-BuildDatabase -name GDB -engine ncbi ../genome.fa &>BuildDatabase_run.log
-RepeatModeler -engine ncbi -pa 28 -database GDB -LTRStruct &>RepeatModeler_run.log
-cd ../
-
-# -------------------------------------------------------------------------------------- #
-# RepeatMasker
-mkdir 02_delete-denovo-lib-result 03_delete-repeatmasker-lib-result 04_delete-repeamasker-noint-result
-RepeatMasker -lib 01_repeatModeler-denovo-repeat.lib/RM_*/consensi.fa.classified -pa 28 -dir 02_delete-denovo-lib-result genome.fa &>RepeatMasker_run.log1
-RepeatMasker -pa 28 -dir 03_delete-repeatmasker-lib-result 02_delete-denovo-lib-result/genome.fa.masked &>RepeatMasker_run.log2
-RepeatMasker -pa 28 -dir 04_delete-repeamasker-noint-result -noint 03_delete-repeatmasker-lib-result/genome.fa.masked.masked &>RepeatMasker_run.log3
+```bash
+famdb.py -i Libraries/RepeatMaskerLib.h5 families -f embl  -a -d Insecta  > Insecta_ad.embl
+util/buildRMLibFromEMBL.pl Insecta_ad.embl > Insecta_ad.fa
 ```
 
-> genome.fa.masked.masked
+```shell
+# RepeatModeler
+mkdir 01_RepeatModeler
+BuildDatabase -name GDB -engine ncbi ../genome.fa > BuildDatabase.log
+RepeatModeler -engine ncbi -pa 28 -database GDB -LTRStruct > RepeatModele.log
+cd ../
 
+# RepeatMasker
+mkdir 02_RepeatMasker
+cat 01_RepeatModeler/GDB-families.fa Insecta_ad.fa > repeat_db.fa
+RepeatMasker -xsmall -gff -html -lib repeat_db.fa -pa 28 genome.fa > RepeatMasker.log
+```
 
+> genome.fa.masked
 
 ------
 
