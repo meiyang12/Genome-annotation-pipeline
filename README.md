@@ -318,10 +318,10 @@ Launch_PASA_pipeline.pl -c alignAssembly.config -C -R -g genome.fa -t transcript
 # -------------------------------------------------------------------------------------- #
 # two cycles !!! of annotation loading, annotation comparison, and annotation updates
 # check gff3
-misc_utilities/pasa_gff3_validator.pl orign.gff3
+misc_utilities/pasa_gff3_validator.pl evm.gff3
 
 # load annotation
-scripts/Load_Current_Gene_Annotations.dbi -c alignAssembly.config -g genome.fa -P orign.gff3
+scripts/Load_Current_Gene_Annotations.dbi -c alignAssembly.config -g genome.fa -P evm.gff3
 
 # update
 # annotCompare.config, set up the mysql database name same as alignAssembly.config
