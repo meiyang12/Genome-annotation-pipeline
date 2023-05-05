@@ -28,8 +28,8 @@
    + ProtHint (https://github.com/gatech-genemark/ProtHint)
    + DIAMOND (http://github.com/bbuchfink/diamond/)
 7. NCBI BLAST+ (https://blast.ncbi.nlm.nih.gov/Blast.cgi)
-8. GenomeThreader (https://genomethreader.org/)
-9. EVidenceModeler (http://evidencemodeler.github.io/)
+8. miniprot (https://github.com/lh3/miniprot)
+9. EVidenceModeler (https://github.com/EVidenceModeler/EVidenceModeler/wiki)
 10. PASA (https://github.com/PASApipeline/PASApipeline/wiki)
     + Blat (http://hgdownload.soe.ucsc.edu/admin/exe/linux.x86_64/blat/blat)
     + fasta (http://faculty.virginia.edu/wrpearson/fasta/fasta36/fasta-36.3.8g.tar.gz)
@@ -45,10 +45,6 @@
      + Vertebrata: https://v100.orthodb.org/download/odb10_vertebrata_fasta.tar.gz
    + Protozoa: https://v100.orthodb.org/download/odb10_protozoa_fasta.tar.gz
    + Viridiplantae: https://v100.orthodb.org/download/odb10_plants_fasta.tar.gz
-3. Swiss-prot (https://www.uniprot.org/downloads, Reviewed)
-4. Id-mapping (https://ftp.uniprot.org/pub/databases/uniprot/current_release/knowledgebase/idmapping/)
-5. KEGG
-6. Pfam (http://pfam.xfam.org/)
 
 ------
 
@@ -60,10 +56,13 @@
 > + insecta_odb10
 
 ```shell
-busco --cpu 28 -l /gpfs/home/meiyang/opt/insecta_odb10 --config /gpfs/home/meiyang/opt/busco-4.0.5/config/config.ini --mode genome --force -o  --i genome.fa --offline
+busco --cpu 28 \
+	-l /gpfs/home/meiyang/opt/insecta_odb10 \
+	--config /gpfs/home/meiyang/opt/busco-4.0.5/config/config.ini \
+	--mode genome --force -o busco \
+	--i genome.fa \
+	--offline
 ```
-
-
 
 ------
 
@@ -75,6 +74,7 @@ busco --cpu 28 -l /gpfs/home/meiyang/opt/insecta_odb10 --config /gpfs/home/meiya
 
 ```bash
 famdb.py -i Libraries/RepeatMaskerLib.h5 families -f embl  -a -d Insecta  > Insecta_ad.embl
+
 util/buildRMLibFromEMBL.pl Insecta_ad.embl > Insecta_ad.fa
 ```
 
@@ -107,14 +107,17 @@ RepeatMasker -xsmall -gff -html -lib repeat_db.fa -pa 28 genome.fa > RepeatMaske
 > + --min_contig, less than genome N50
 
 ```shell
-braker.pl --species=Sfru --genome=genome.fa --prot_seq=protein.fasta --softmasking --gff3 --cores=16 --workingdir=ab_initio --min_contig=4000
+braker.pl --species=Sfru \
+	--genome=genome.fa \
+	--prot_seq=protein.fasta \
+	--softmasking --gff3 --cores=16 \
+	--workingdir=ab_initio \
+	--min_contig=4000
 
 mv augustus.hints.gff3 gene_predictions.gff3
 ```
 
 > **gene_predictions.gff3**
-
-
 
 #### 4.2 RNA-seq based gene prediction
 
@@ -123,8 +126,6 @@ mv augustus.hints.gff3 gene_predictions.gff3
 > + masked geome (genome.fa)
 >+ transcriptome
 > 
-
-
 
 ```shell
 # genome index
@@ -164,8 +165,6 @@ stringtie -p 28 -o stringtie.gtf merged.bam
 
 > stringtie.gtf
 
-
-
 > #### 2. *TransDecoder*
 >
 > + masked geome (genome.fa)
@@ -173,6 +172,7 @@ stringtie -p 28 -o stringtie.gtf merged.bam
 
 ```shell
 util/gtf_genome_to_cdna_fasta.pl stringtie.gtf genome.fa > transcripts.fasta
+
 util/gtf_to_alignment_gff3.pl stringtie.gtf > transcripts.gff3
 
 TransDecoder.LongOrfs -t transcripts.fasta
@@ -186,41 +186,26 @@ hmmscan --cpu 28 --domtblout pfam.domtblout Pfam-A.hmm transdecoder_dir/longest_
 TransDecoder.Predict -t transcripts.fasta --retain_pfam_hits pfam.domtblout --retain_blastp_hits blastp.outfmt6
 
 util/cdna_alignment_orf_to_genome_orf.pl transcripts.fasta.transdecoder.gff3 transcripts.gff3 transcripts.fasta > transcripts.fasta.transdecoder.genome.gff3
+
+mv transcripts.fasta.transdecoder.genome.gff3 transcript_alignments.gff3
 ```
 
-> **transcripts.fasta.transdecoder.genome.gff3**
-
-
+> **transcript_alignments.gff3**
 
 #### 4.3 Homology-based gene prediction
 
-> #### *GenomeThreader*
+> #### *miniprot*
 >
-> + masked geome (genome.fa)
+> + masked geome (genome.fa.masked)
 > + homology protein (OrthoDB), proetin.fasta
 
 ```shell
-# split genome
-# -p, piece number
-perl split_fasta_by_multiple_methods.pl  genome.fa  -m 2  -p 28  -d  ./out
+miniprot -t28 -d genome.mpi genome.fa.masked 
 
-$homolog_protein = protein.fasta
+miniprot -It28 --gff genome.mpi protein.fasta > miniprot.gff3
 
-# -------------------------------------------------------------------------------------- #
-# batch running
-cd out
-for file in `ls genome.fa.*`;do mv $file `echo -e $file | sed -r 's/0*([0-9])/\1/'`;done;
-number=$(ls -l | grep "^-" -c)
-echo  $number
-for ((i=1;i<=number;i++));do
-	nohup gth -genomic genome.fa.$i -protein $homolog_protein -gff3out -intermediate -o genome.fa.$i.gth.out &
-done
+python miniprot.py miniprot.gff3 > protein_alignments.gff3
 
-# -------------------------------------------------------------------------------------- #
-# merge
-cat ./out/*out > gth.out
-perl Convert_gth.pl gth.out >protein_alignments.gff
-perl homolog_change_gff3.pl protein_alignments.gff >protein_alignments.gff3
 ```
 
 > **protein_alignments.gff3**
@@ -238,16 +223,16 @@ perl homolog_change_gff3.pl protein_alignments.gff >protein_alignments.gff3
 + ##### weights.txt
 
   ```shell
-  ABINITIO_PREDICTION      AUGUSTUS       4
-  PROTEIN     nucleotide_to_protein_match     5
-  TRANSCRIPT	transdecoder      10
+PROTEIN	miniprot	5
+ABINITIO_PREDICTION	AUGUSTUS	4
+OTHER_PREDICTION	transdecoder	10
   ```
 
 + ##### GFF3 file
 
   + gene_predictions.gff3
   + protein_alignments.gff3
-  + transcripts.fasta.transdecoder.genome.gff3
+  + transcript_alignments.gff3
 
 + #####  Check the gff3 file (Optional)
 
@@ -257,42 +242,20 @@ perl homolog_change_gff3.pl protein_alignments.gff >protein_alignments.gff3
 
   
 
-#### 5.2 Partitioning the inputs
+#### 5.2 Run
 
 ```shell
-EvmUtils/partition_EVM_inputs.pl --genome genome.fa --gene_predictions gff/gene_predictions.gff3 --protein_alignments gff/protein_alignments.gff3 --transcript_alignments gff/transcripts.fasta.transdecoder.genome.gff3 --segmentSize 100000 --overlapSize 10000 --partition_listing partitions_list.out
+EVidenceModeler \
+	--sample_id speceis \
+	--genome genome.fa \
+	--weights weights.txt  \
+	--gene_predictions gff/gene_predictions.gff3 \
+	--protein_alignments gff/protein_alignments.gff3 \
+	--transcript_alignments gff/transcript_alignments.gff3 \
+	--segmentSize 100000 --overlapSize 10000 --CPU 20
 ```
 
-
-
-#### 5.3 Generating the EVM Command Set
-
-```shell
-EvmUtils/write_EVM_commands.pl --genome genome.fasta --weights weights.txt --gene_predictions gff/gene_predictions.gff3 --protein_alignments gff/protein_alignments.gff3 --transcript_alignments gff/transcripts.fasta.transdecoder.genome.gff3 --output_file_name evm.out  --partitions partitions_list.out >  commands.list
-
-# run
-bash commands.list 
-```
-
-
-
-#### 5.4 Combining the Partitions
-
-```shell
-EvmUtils/recombine_EVM_partial_outputs.pl --partitions partitions_list.out --output_file_name evm.out
-```
-
-
-
-#### 5.5 Convert to GFF3 Format
-
-```shell
-EvmUtils/convert_EVM_outputs_to_GFF3.pl  --partitions partitions_list.out --output evm.out  --genome genome.fa
-
-find . -regex ".*evm.out.gff3" -exec cat {} \; > evm.gff3
-```
-
-
+> **species.evm.gff3**
 
 ------
 
@@ -303,7 +266,7 @@ find . -regex ".*evm.out.gff3" -exec cat {} \; > evm.gff3
 > #### ***PASA***
 >
 > + masked geome (genome.fa)
-> + evm.gff3
+> + species.evm.gff3
 > + stringtie.gtf
 
 ```shell
@@ -318,17 +281,15 @@ Launch_PASA_pipeline.pl -c alignAssembly.config -C -R -g genome.fa -t transcript
 # -------------------------------------------------------------------------------------- #
 # two cycles !!! of annotation loading, annotation comparison, and annotation updates
 # check gff3
-misc_utilities/pasa_gff3_validator.pl evm.gff3
+misc_utilities/pasa_gff3_validator.pl species.evm.gff3
 
 # load annotation
-scripts/Load_Current_Gene_Annotations.dbi -c alignAssembly.config -g genome.fa -P evm.gff3
+scripts/Load_Current_Gene_Annotations.dbi -c alignAssembly.config -g genome.fa -P species.evm.gff3
 
 # update
 # annotCompare.config, set up the mysql database name same as alignAssembly.config
 Launch_PASA_pipeline.pl -c annotCompare.config -A -g genome.fa -t transcripts.fasta.clean
 ```
-
-
 
 > #### *Collect GFF, cds, PEP*
 >
