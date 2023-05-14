@@ -222,11 +222,12 @@ python miniprot.py miniprot.gff3 > protein_alignments.gff3
 
 + ##### weights.txt
 
-  ```shell
+```shell
 PROTEIN	miniprot	5
 ABINITIO_PREDICTION	AUGUSTUS	4
 OTHER_PREDICTION	transdecoder	10
-  ```
+```
+
 
 + ##### GFF3 file
 
