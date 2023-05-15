@@ -6,7 +6,8 @@
 > 
 >  ***Email: meiyang12@zju.edu.cn***
 >  
->  ***Cite: Yang Mei, Dong Jing, Shenyang Tang, Xi Chen, Hao Chen, Haonan Duanmu, Yuyang Cong, Mengyao Chen, Xinhai Ye, Hang Zhou, Kang He, Fei Li, InsectBase 2.0: a comprehensive gene resource for insects, Nucleic Acids Research, Volume 50, Issue D1, 7 January 2022, Pages D1040–D1045, https://doi.org/10.1093/nar/gkab1090.***
+>  ***Cite: 
+>  ***Yang Mei, Dong Jing, Shenyang Tang, Xi Chen, Hao Chen, Haonan Duanmu, Yuyang Cong, Mengyao Chen, Xinhai Ye, Hang Zhou, Kang He, Fei Li, InsectBase 2.0: a comprehensive gene resource for insects, Nucleic Acids Research, Volume 50, Issue D1, 7 January 2022, Pages D1040–D1045, https://doi.org/10.1093/nar/gkab1090.***
 
 
 ------
@@ -50,8 +51,8 @@
 
 ### 2. Genome assessment
 
-> #### *BUSCOv4*
->
+#### *BUSCO v4 & v5*
+
 > + genome.fa
 > + insecta_odb10
 
@@ -68,14 +69,14 @@ busco --cpu 28 \
 
 ### 3. Repeat annotation and genome mask
 
-> #### *RepeatModelerv2 & RepeatMasker*
->
+#### *RepeatModelerv2 & RepeatMasker*
+
 > + genome.fa
 
 Build reference repeat database
 ```bash
+# RepeatMasker
 famdb.py -i Libraries/RepeatMaskerLib.h5 families -f embl  -a -d Insecta  > Insecta_ad.embl
-
 util/buildRMLibFromEMBL.pl Insecta_ad.embl > Insecta_ad.fa
 
 # RepeatModeler
@@ -102,12 +103,16 @@ RepeatMasker -xsmall -gff -html -lib repeat_db.fa -pa 28 genome.fa > RepeatMaske
 
 #### 4.1 Ab initio gene prediction
 
-> #### *BRAKERv2*
->
+#### *BRAKERv2*
+
 > + masked geome (genome.fa)
 > + homology protein (OrthoDB), proetin.fasta
-> + --species=<species_name>
-> + --min_contig, less than genome N50
+
+Parameters
+```shell
+--species=<species_name>
+--min_contig, less than genome N50
+```
 
 ```shell
 braker.pl --species=Sfru \
@@ -124,34 +129,36 @@ mv augustus.hints.gff3 gene_predictions.gff3
 
 #### 4.2 RNA-seq based gene prediction
 
-> #### 1. *HISAT2 & StringTie*
->
+#### 1. *HISAT2 & StringTie*
+
 > + masked geome (genome.fa)
 >+ transcriptome
-> 
 
+Build genome index
 ```shell
-# genome index
 hisat2-build -p 28 genome.fa genome
+```
 
-# -------------------------------------------------------------------------------------- #
+Mapping to genome
+```shell
 # single end
 hisat2 -p 28 -x genome --dta -U reads.fq | samtools sort -@ 28 > reads.bam 
 # paired end
 hisat2 -p 28 -x genome --dta -1 reads_1.fq -2 reads_2.fq | samtools sort -@ 28 > reads.bam
-...
 ```
 
+Batch running
+
 ```shell
-# batch running
 # single end
 single_list = './single.txt'
 for run in `cat $single_list`
 do
 	hisat2 -p 28 -x genome --dta -U ${run}.fq | samtools sort -@ 28 > ${run}.bam
 done
+```
 
-# -------------------------------------------------------------------------------------- #
+```shell
 # paired end
 paired_list = './paired.txt'
 for run in `cat $paired_list`
@@ -160,34 +167,29 @@ do
 done
 ```
 
+GTF merging
 ```shell
-# merge gtf
 samtools merge -@ 28 merged.bam `ls *bam`
 stringtie -p 28 -o stringtie.gtf merged.bam
 ```
 
 > stringtie.gtf
 
-> #### 2. *TransDecoder*
->
+#### 2. *TransDecoder*
+
 > + masked geome (genome.fa)
 > + stringtie.gtf
 
 ```shell
 util/gtf_genome_to_cdna_fasta.pl stringtie.gtf genome.fa > transcripts.fasta
-
 util/gtf_to_alignment_gff3.pl stringtie.gtf > transcripts.gff3
-
 TransDecoder.LongOrfs -t transcripts.fasta
 
-# -------------------------------------------------------------------------------------- #
 # homology search
 blastp -query transdecoder_dir/longest_orfs.pep -db uniprot_sprot.fasta  -max_target_seqs 1 -outfmt 6 -evalue 1e-5 -num_threads 28 > blastp.outfmt6
 hmmscan --cpu 28 --domtblout pfam.domtblout Pfam-A.hmm transdecoder_dir/longest_orfs.pep
-# -------------------------------------------------------------------------------------- #
 
 TransDecoder.Predict -t transcripts.fasta --retain_pfam_hits pfam.domtblout --retain_blastp_hits blastp.outfmt6
-
 util/cdna_alignment_orf_to_genome_orf.pl transcripts.fasta.transdecoder.gff3 transcripts.gff3 transcripts.fasta > transcripts.fasta.transdecoder.genome.gff3
 
 mv transcripts.fasta.transdecoder.genome.gff3 transcript_alignments.gff3
@@ -197,54 +199,46 @@ mv transcripts.fasta.transdecoder.genome.gff3 transcript_alignments.gff3
 
 #### 4.3 Homology-based gene prediction
 
-> #### *miniprot*
->
+#### *miniprot*
+
 > + masked geome (genome.fa.masked)
 > + homology protein (OrthoDB), proetin.fasta
 
 ```shell
 miniprot -t28 -d genome.mpi genome.fa.masked 
-
 miniprot -It28 --gff genome.mpi protein.fasta > miniprot.gff3
 
 python miniprot.py miniprot.gff3 > protein_alignments.gff3
-
 ```
 
 > **protein_alignments.gff3**
 
-
-
 ------
 
 ### 5 EVidenceModeler (EVM)
-
 #### 5.1 Preparing Inputs
 
-+ ##### masked geome (genome.fa)
+> + ##### masked geome (genome.fa)
+> + ##### weights.txt
 
-+ ##### weights.txt
-
+weights.txt
 ```shell
 PROTEIN	miniprot	5
 ABINITIO_PREDICTION	AUGUSTUS	4
 OTHER_PREDICTION	transdecoder	10
 ```
 
-
-+ ##### GFF3 file
+GFF3 file
 
   + gene_predictions.gff3
   + protein_alignments.gff3
   + transcript_alignments.gff3
 
-+ #####  Check the gff3 file (Optional)
 
+Check the gff3 file (Optional)
   ```shell
   gff3_gene_prediction_file_validator.pl your.gff3
   ```
-
-  
 
 #### 5.2 Run
 
@@ -264,25 +258,24 @@ EVidenceModeler \
 ------
 
 ### 6 OGS annotation
-
 #### 6.1 OGS annotation updates
 
-> #### ***PASA***
->
+#### ***PASA***
+
 > + masked geome (genome.fa)
 > + species.evm.gff3
 > + stringtie.gtf
 
+PASA alignment Assembly
 ```shell
-# PASA alignment Assembly
 util/gtf_genome_to_cdna_fasta.pl stringtie.gtf genome.fa > transcripts.fasta
 bin/seqclean transcripts.fasta
+```
 
-# transcripts alignments
-# alignAssembly.config, set up the mysql database name; CPU <= 16
+Transcripts alignments, alignAssembly.config, set up the mysql database name; CPU <= 16
+```shell
 Launch_PASA_pipeline.pl -c alignAssembly.config -C -R -g genome.fa -t transcripts.fasta.clean -T -u transcripts.fasta --ALIGNERS blat --CPU 16
 
-# -------------------------------------------------------------------------------------- #
 # two cycles !!! of annotation loading, annotation comparison, and annotation updates
 # check gff3
 misc_utilities/pasa_gff3_validator.pl species.evm.gff3
@@ -295,8 +288,8 @@ scripts/Load_Current_Gene_Annotations.dbi -c alignAssembly.config -g genome.fa -
 Launch_PASA_pipeline.pl -c annotCompare.config -A -g genome.fa -t transcripts.fasta.clean
 ```
 
-> #### *Collect GFF, cds, PEP*
->
+#### *Collect GFF, cds, PEP*
+
 > + gene_structures_post_PASA_updates.gff3
 
 ```shell
@@ -315,8 +308,6 @@ python Collect_no_alt.py pep.fa cds.fa Sfru.gff3
 > + **Sfru.gff3 (Sfru_no_alt.gff3)**
 > + **cds.fa (cds_no_alt.fa)**
 > + **pep.fa (pep_no_alt.fa)**
-
-
 
 
 #### 6.2 Function annotation
