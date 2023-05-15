@@ -216,7 +216,7 @@ python miniprot.py miniprot.gff3 > protein_alignments.gff3
 
 ------
 
-### 5 EVidenceModeler (EVM)
+### 5. EVidenceModeler (EVM)
 #### 5.1 Preparing Inputs
 
 > + ##### masked geome (genome.fa)
@@ -258,7 +258,7 @@ EVidenceModeler \
 
 ------
 
-### 6 OGS annotation
+### 6. OGS annotation
 #### 6.1 OGS annotation updates
 
 #### ***PASA***
