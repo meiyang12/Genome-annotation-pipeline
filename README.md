@@ -76,9 +76,7 @@ busco --cpu 28 \
 famdb.py -i Libraries/RepeatMaskerLib.h5 families -f embl  -a -d Insecta  > Insecta_ad.embl
 
 util/buildRMLibFromEMBL.pl Insecta_ad.embl > Insecta_ad.fa
-```
 
-```shell
 # RepeatModeler
 mkdir 01_RepeatModeler
 BuildDatabase -name GDB -engine ncbi ../genome.fa > BuildDatabase.log
@@ -88,6 +86,9 @@ cd ../
 # RepeatMasker
 mkdir 02_RepeatMasker
 cat 01_RepeatModeler/GDB-families.fa Insecta_ad.fa > repeat_db.fa
+```
+
+```shell
 RepeatMasker -xsmall -gff -html -lib repeat_db.fa -pa 28 genome.fa > RepeatMasker.log
 ```
 
