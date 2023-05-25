@@ -313,8 +313,8 @@ python Collect_no_alt.py pep.fa cds.fa Sfru.gff3
 
 #### 6.2 Function annotation
 
-> #### *eggNOG-mapper*
->
+#### *eggNOG-mapper*
+
 > + pep_no_alt.fa
 
 http://eggnog-mapper.embl.de/
