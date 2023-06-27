@@ -214,9 +214,8 @@ python miniprot.py miniprot.gff3 > protein_alignments.gff3
 
 ### 5. EVidenceModeler (EVM)
 #### 1. Preparing Inputs
-
-> + ##### masked geome (genome.fa)
-> + ##### weights.txt
+- masked geome (genome.fa)
+- weights.txt
 
 weights.txt
 ```shell
@@ -287,7 +286,7 @@ peaks2utr -p 20 species.evm.gff3 merged.bam
 
 #### 2. Collect GFF, cds, PEP
 
-> + gene_structures_post_PASA_updates.gff3
+- gene_structures_post_PASA_updates.gff3
 
 ```shell
 # rename gff3
