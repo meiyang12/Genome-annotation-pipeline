@@ -1,4 +1,4 @@
-# Genome annotation pipeline (EVM)
+# Genome annotation pipeline
 
 > ***By Yang Mei***
 > 
@@ -15,7 +15,7 @@
 
 ### 1. Prerequisites
 
-#### 1.1 Software
+#### 1. Software
 
 1. BUSCO (https://busco.ezlab.org/)
 2. RepeatMasker, RepeatModeler (http://www.repeatmasker.org/)
@@ -37,44 +37,39 @@
     + fasta (http://faculty.virginia.edu/wrpearson/fasta/fasta36/fasta-36.3.8g.tar.gz)
 11. gffread (https://github.com/gpertea/gffread)
 
-#### 1.2 DataSet
+#### 2. DataSet
 
-1. RNA-seq (Optional) (https://www.ncbi.nlm.nih.gov/sra/)
-2. Homology protein (eg., OrthoDB (https://v100.orthodb.org/))
-   + Fungi: https://v100.orthodb.org/download/odb10_fungi_fasta.tar.gz
-   + Metazoa: https://v100.orthodb.org/download/odb10_metazoa_fasta.tar.gz
-     + Arthropoda: https://v100.orthodb.org/download/odb10_arthropoda_fasta.tar.gz
-     + Vertebrata: https://v100.orthodb.org/download/odb10_vertebrata_fasta.tar.gz
-   + Protozoa: https://v100.orthodb.org/download/odb10_protozoa_fasta.tar.gz
-   + Viridiplantae: https://v100.orthodb.org/download/odb10_plants_fasta.tar.gz
+1. RNA-seq (https://www.ncbi.nlm.nih.gov/sra/)
+2. Homology protein (https://bioinf.uni-greifswald.de/bioinf/partitioned_odb11/)
 
 ------
 
 ### 2. Genome assessment
 
-#### *BUSCO v4 & v5*
+#### BUSCO v5
 
-> + genome.fa
-> + insecta_odb10
+- genome.fa
+- insecta_odb10
 
 ```shell
 busco --cpu 28 \
 	-l /gpfs/home/meiyang/opt/insecta_odb10 \
-	--config /gpfs/home/meiyang/opt/busco-4.0.5/config/config.ini \
-	--mode genome --force -o busco \
-	--i genome.fa \
+	-m genome --force -o busco \
+	-i genome.fa \
 	--offline
 ```
 
+```bash
+cat out/short_summary.specific.insecta_odb10.out.txt
+```
 ------
 
 ### 3. Repeat annotation and genome mask
 
-#### *RepeatModelerv2 & RepeatMasker*
+#### 1. RepeatModeler v2 & RepeatMasker
+- genome.fa
 
-> + genome.fa
-
-Build reference repeat database
+Building reference repeat database
 ```bash
 # RepeatMasker
 famdb.py -i Libraries/RepeatMaskerLib.h5 families -f embl  -a -d Insecta  > Insecta_ad.embl
@@ -85,7 +80,10 @@ mkdir 01_RepeatModeler
 BuildDatabase -name GDB -engine ncbi ../genome.fa > BuildDatabase.log
 RepeatModeler -engine ncbi -pa 28 -database GDB -LTRStruct > RepeatModele.log
 cd ../
+```
 
+Running RepeatMasker for genome masking
+```bash
 # RepeatMasker
 mkdir 02_RepeatMasker
 cat 01_RepeatModeler/GDB-families.fa Insecta_ad.fa > repeat_db.fa
@@ -95,45 +93,20 @@ Run RepeatMasker
 ```shell
 RepeatMasker -xsmall -gff -html -lib repeat_db.fa -pa 28 genome.fa > RepeatMasker.log
 ```
+- genome.fa.masked
 
-> genome.fa.masked
-
+#### 2. EDTA
+```bash
+EDTA.pl --genome female.fa --species others --sensitive 1 --anno 1 --evaluate 1 --threads 30
+```
 ------
 
 ### 4. Gene prediction
+#### 1. RNA-seq based gene prediction
 
-#### 4.1 Ab initio gene prediction
-
-#### *BRAKERv2*
-
-> + masked geome (genome.fa)
-> + homology protein (OrthoDB), proetin.fasta
-
-Parameters
-```shell
---species=<species_name>
---min_contig, less than genome N50
-```
-
-```shell
-braker.pl --species=Sfru \
-	--genome=genome.fa \
-	--prot_seq=protein.fasta \
-	--softmasking --gff3 --cores=16 \
-	--workingdir=ab_initio \
-	--min_contig=4000
-
-mv augustus.hints.gff3 gene_predictions.gff3
-```
-
-> **gene_predictions.gff3**
-
-#### 4.2 RNA-seq based gene prediction
-
-#### 1. *HISAT2 & StringTie*
-
-> + masked geome (genome.fa)
->+ transcriptome
+##### 1. HISAT2 & StringTie
+- masked geome (genome.fa)
+- transcriptome
 
 Build genome index
 ```shell
@@ -173,13 +146,11 @@ GTF merging
 samtools merge -@ 28 merged.bam `ls *bam`
 stringtie -p 28 -o stringtie.gtf merged.bam
 ```
+- stringtie.gtf
 
-> stringtie.gtf
-
-#### 2. *TransDecoder*
-
-> + masked geome (genome.fa)
-> + stringtie.gtf
+##### 2. TransDecoder
+- masked geome (genome.fa)
+- stringtie.gtf
 
 ```shell
 util/gtf_genome_to_cdna_fasta.pl stringtie.gtf genome.fa > transcripts.fasta
@@ -196,14 +167,39 @@ util/cdna_alignment_orf_to_genome_orf.pl transcripts.fasta.transdecoder.gff3 tra
 mv transcripts.fasta.transdecoder.genome.gff3 transcript_alignments.gff3
 ```
 
-> **transcript_alignments.gff3**
+- transcript_alignments.gff3
 
-#### 4.3 Homology-based gene prediction
+#### 2. Ab initio gene prediction
 
-#### *miniprot*
+##### BRAKER v3
+- masked geome (genome.fa)
+- homology protein (OrthoDB), Arthropoda.fa
 
-> + masked geome (genome.fa.masked)
-> + homology protein (OrthoDB), proetin.fasta
+Parameters
+```shell
+--species=<species_name>
+--min_contig, less than genome N50
+```
+
+```shell
+braker.pl --genome=genome.fa \
+	--species=Sfru \
+	--prot_seq=Arthropoda.fa \
+	--bam=merged.bam \
+	--threads 30 \
+	--gff3 --workingdir=out
+
+python tag_rename.py braker.gff3 > gene_predictions.gff3
+```
+- gene_predictions.gff3
+
+> NOTE: The assessment result by BUSCO for the gene sets predicted by BRAKER3 showed that there are too many duplicated genes, so we use EVM to merge this results.
+
+#### 3. Homology-based gene prediction
+
+##### miniprot
+- masked geome (genome.fa.masked)
+- homology protein (OrthoDB), Arthropoda.fa
 
 ```shell
 miniprot -t28 -d genome.mpi genome.fa.masked 
@@ -217,7 +213,7 @@ python miniprot.py miniprot.gff3 > protein_alignments.gff3
 ------
 
 ### 5. EVidenceModeler (EVM)
-#### 5.1 Preparing Inputs
+#### 1. Preparing Inputs
 
 > + ##### masked geome (genome.fa)
 > + ##### weights.txt
@@ -225,23 +221,21 @@ python miniprot.py miniprot.gff3 > protein_alignments.gff3
 weights.txt
 ```shell
 PROTEIN	miniprot	5
-ABINITIO_PREDICTION	AUGUSTUS	4
+ABINITIO_PREDICTION	BRAKER3	10
 OTHER_PREDICTION	transdecoder	10
 ```
 
 GFF3 file
-
-  + gene_predictions.gff3
-  + protein_alignments.gff3
-  + transcript_alignments.gff3
-
+- gene_predictions.gff3
+- protein_alignments.gff3
+- transcript_alignments.gff3
 
 Check the gff3 file (Optional)
-  ```shell
-  gff3_gene_prediction_file_validator.pl your.gff3
-  ```
+```shell
+gff3_gene_prediction_file_validator.pl your.gff3
+```
 
-#### 5.2 Run
+#### 2. Run
 
 ```shell
 EVidenceModeler \
@@ -253,19 +247,17 @@ EVidenceModeler \
 	--transcript_alignments gff/transcript_alignments.gff3 \
 	--segmentSize 100000 --overlapSize 10000 --CPU 20
 ```
-
-> **species.evm.gff3**
+- species.evm.gff3
 
 ------
 
 ### 6. OGS annotation
-#### 6.1 OGS annotation updates
+#### 1. OGS annotation updates
 
-#### ***PASA***
-
-> + masked geome (genome.fa)
-> + species.evm.gff3
-> + stringtie.gtf
+##### 1. PASApipeline
+- masked geome (genome.fa)
+- species.evm.gff3
+- stringtie.gtf
 
 PASA alignment Assembly
 ```shell
@@ -288,8 +280,12 @@ scripts/Load_Current_Gene_Annotations.dbi -c alignAssembly.config -g genome.fa -
 # annotCompare.config, set up the mysql database name same as alignAssembly.config
 Launch_PASA_pipeline.pl -c annotCompare.config -A -g genome.fa -t transcripts.fasta.clean
 ```
+##### 2. peaks2utr
+```bash
+peaks2utr -p 20 species.evm.gff3 merged.bam
+```
 
-#### *Collect GFF, cds, PEP*
+#### 2. Collect GFF, cds, PEP
 
 > + gene_structures_post_PASA_updates.gff3
 
@@ -305,17 +301,15 @@ gffread Sfru.gff3 -g genome.fa -x Sfru_cds.fa -y Sfru_pep.fa
 python Collect_no_alt.py pep.fa cds.fa Sfru.gff3
 # no_alt.gff3, cds_no_alt.fa, pep_no_alt.fa
 ```
+- Sfru.gff3 (Sfru_no_alt.gff3)
+- cds.fa (cds_no_alt.fa)
+- pep.fa (pep_no_alt.fa)
 
-> + **Sfru.gff3 (Sfru_no_alt.gff3)**
-> + **cds.fa (cds_no_alt.fa)**
-> + **pep.fa (pep_no_alt.fa)**
 
+#### 3. Function annotation
 
-#### 6.2 Function annotation
-
-#### *eggNOG-mapper*
-
-> + pep_no_alt.fa
+##### eggNOG-mapper
+- pep_no_alt.fa
 
 http://eggnog-mapper.embl.de/
 
