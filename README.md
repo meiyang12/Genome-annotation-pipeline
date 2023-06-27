@@ -207,8 +207,7 @@ miniprot -It28 --gff genome.mpi protein.fasta > miniprot.gff3
 
 python miniprot.py miniprot.gff3 > protein_alignments.gff3
 ```
-
-> **protein_alignments.gff3**
+- protein_alignments.gff3
 
 ------
 
