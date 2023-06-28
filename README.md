@@ -193,8 +193,6 @@ python tag_rename.py braker.gff3 > gene_predictions.gff3
 ```
 - gene_predictions.gff3
 
-> NOTE: The assessment result by BUSCO for the gene sets predicted by BRAKER3 showed that there are too many duplicated genes, so we use EVM to merge this results.
-
 #### 3. Homology-based gene prediction
 
 ##### miniprot
