@@ -65,9 +65,9 @@ cat out/short_summary.specific.insecta_odb10.out.txt
 or you can try compleasm, a faster and more accurate reimplementation of BUSCO
 #### compleasm
 ```bash
-compleasm.py run -t16 -l /gpfs/home/meiyang/opt/insecta_odb10 -a genome.fa -o busco
+compleasm.py run -t16 -l insecta -L /data/ -a genome.fa -o busco
 ````
-
+Note: the organization of the lineage file downloaded by compleasm is different from that of BUSCO.
 ------
 
 ### 3. Repeat annotation and genome mask
