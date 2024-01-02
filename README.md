@@ -17,7 +17,7 @@
 
 #### 1. Software
 
-1. BUSCO (https://busco.ezlab.org/)
+1. BUSCO (https://busco.ezlab.org/) (compleasm(https://github.com/huangnengCSU/compleasm), compleasm: a faster and more accurate reimplementation of BUSCO)
 2. RepeatMasker, RepeatModeler (http://www.repeatmasker.org/)
 3. HISAT2 (http://daehwankimlab.github.io/hisat2/)
 4. StringTie (http://ccb.jhu.edu/software/stringtie/)
@@ -62,6 +62,12 @@ busco --cpu 28 \
 ```bash
 cat out/short_summary.specific.insecta_odb10.out.txt
 ```
+or you can try compleasm, a faster and more accurate reimplementation of BUSCO
+#### compleasm
+```bash
+compleasm.py run -t16 -l /gpfs/home/meiyang/opt/insecta_odb10 -a genome.fa -o busco
+````
+
 ------
 
 ### 3. Repeat annotation and genome mask
