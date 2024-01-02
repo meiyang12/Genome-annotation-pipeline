@@ -68,6 +68,7 @@ or you can try compleasm, a faster and more accurate reimplementation of BUSCO
 compleasm.py run -t16 -l insecta -L /data/ -a genome.fa -o busco
 ````
 Note: the organization of the lineage file downloaded by compleasm is different from that of BUSCO.
+
 ------
 
 ### 3. Repeat annotation and genome mask
