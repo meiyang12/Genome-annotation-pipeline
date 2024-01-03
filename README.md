@@ -316,5 +316,9 @@ python Collect_no_alt.py pep.fa cds.fa Sfru.gff3
 
 http://eggnog-mapper.embl.de/
 
+#### PANNZER
+
+http://ekhidna2.biocenter.helsinki.fi/sanspanz/
+
 ------
 
