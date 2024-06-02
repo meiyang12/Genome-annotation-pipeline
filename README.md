@@ -196,7 +196,7 @@ braker.pl --genome=genome.fa \
 	--threads 30 \
 	--gff3 --workingdir=out
 
-python tag_rename.py braker.gff3 > gene_predictions.gff3
+python gff_rename.py braker.gff3 sfru > gene_predictions.gff3
 ```
 - gene_predictions.gff3
 
@@ -295,7 +295,7 @@ peaks2utr -p 20 species.evm.gff3 merged.bam
 ```shell
 # rename gff3
 # species name, Sfru
-python PASA_gff_rename.py gene_structures_post_PASA_updates.gff3 Sfru EVM > Sfru.gff3
+python gff_rename.py gene_structures_post_PASA_updates.gff3 Sfru > Sfru.gff3
 
 # collect
 gffread Sfru.gff3 -g genome.fa -x Sfru_cds.fa -y Sfru_pep.fa
