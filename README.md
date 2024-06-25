@@ -209,10 +209,8 @@ python gff_rename.py braker.gff3 sfru > gene_predictions.gff3
 ```shell
 miniprot -t28 -d genome.mpi genome.fa.masked 
 miniprot -It28 --gff genome.mpi protein.fasta > miniprot.gff3
-
-python miniprot.py miniprot.gff3 > protein_alignments.gff3
 ```
-- protein_alignments.gff3
+- miniprot.gff3
 
 ------
 
@@ -226,6 +224,11 @@ weights.txt
 PROTEIN	miniprot	5
 ABINITIO_PREDICTION	BRAKER3	10
 OTHER_PREDICTION	transdecoder	10
+```
+
+The gff3 file of miniprot should be reformated.
+```shell
+python ~/software/EVidenceModeler-v2.1.0/EvmUtils/misc/miniprot_GFF_2_EVM_alignment_GFF3.py miniprot.gff3 > protein_alignmentss.gff3
 ```
 
 GFF3 file
